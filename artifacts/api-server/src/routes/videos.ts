@@ -32,13 +32,18 @@ router.post("/", async (req: Request, res: Response) => {
   const parsed = CreateVideoBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
 
-  const [video] = await db.insert(videosTable).values(parsed.data).returning();
+  const { duration, ...rest } = parsed.data;
+
+  const [video] = await db.insert(videosTable).values({
+    ...rest,
+    duration: duration ?? undefined,
+  }).returning();
   res.status(201).json({ ...video, createdAt: video.createdAt.toISOString() });
 });
 
 // GET /videos/:id
 router.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const [video] = await db.select().from(videosTable).where(eq(videosTable.id, id));

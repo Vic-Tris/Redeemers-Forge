@@ -1,42 +1,45 @@
 import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { usersTable, postLikesTable, postBookmarksTable, postsTable, subscriptionsTable } from "@workspace/db";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { UpdateMyProfileBody } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
+import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
-async function upsertUser(id: string, name: string, email: string, avatar?: string) {
-  const existing = await db.select().from(usersTable).where(eq(usersTable.id, id));
-  if (existing.length === 0) {
-    await db.insert(usersTable).values({ id, name, email, avatar: avatar ?? null }).onConflictDoNothing();
-  }
+async function upsertUser(id: string, name: string, email: string, avatar?: string | null) {
+  await db.insert(usersTable).values({ id, name, email, avatar: avatar ?? null }).onConflictDoNothing();
 }
 
 // GET /users/me
-router.get("/me", async (req: Request, res: Response) => {
-  const userId = req.headers["x-user-id"] as string | undefined;
-  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+router.get("/me", requireAuth, async (req: Request, res: Response) => {
+  const auth = getAuth(req);
+  const userId = auth.userId!;
 
-  const name = (req.headers["x-user-name"] as string) ?? "User";
-  const email = (req.headers["x-user-email"] as string) ?? "";
-  const avatar = req.headers["x-user-avatar"] as string | undefined;
+  const clerkUser = auth.sessionClaims;
+  const name = (clerkUser?.firstName as string | undefined) ?? (clerkUser?.name as string | undefined) ?? "User";
+  const email = (clerkUser?.email as string | undefined) ?? "";
+  const avatar = clerkUser?.imageUrl as string | null | undefined;
 
   await upsertUser(userId, name, email, avatar);
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
 
+  const [sub] = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.userId, userId));
+
   res.json({
     ...user,
     joinedAt: user.joinedAt.toISOString(),
+    isPremium: sub?.status === "active",
   });
 });
 
 // PATCH /users/me
-router.patch("/me", async (req: Request, res: Response) => {
-  const userId = req.headers["x-user-id"] as string | undefined;
-  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+router.patch("/me", requireAuth, async (req: Request, res: Response) => {
+  const auth = getAuth(req);
+  const userId = auth.userId!;
 
   const parsed = UpdateMyProfileBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
@@ -55,9 +58,9 @@ router.patch("/me", async (req: Request, res: Response) => {
 });
 
 // GET /users/me/dashboard
-router.get("/me/dashboard", async (req: Request, res: Response) => {
-  const userId = req.headers["x-user-id"] as string | undefined;
-  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+router.get("/me/dashboard", requireAuth, async (req: Request, res: Response) => {
+  const auth = getAuth(req);
+  const userId = auth.userId!;
 
   const [likes, bookmarks] = await Promise.all([
     db.select().from(postLikesTable).where(eq(postLikesTable.userId, userId)).orderBy(desc(postLikesTable.createdAt)).limit(10),
@@ -102,8 +105,8 @@ router.get("/me/dashboard", async (req: Request, res: Response) => {
 
 // GET /users
 router.get("/", async (req: Request, res: Response) => {
-  const limit = parseInt(req.query.limit as string) || 20;
-  const offset = parseInt(req.query.offset as string) || 0;
+  const limit = parseInt(String(req.query.limit ?? "20"));
+  const offset = parseInt(String(req.query.offset ?? "0"));
 
   const users = await db.select().from(usersTable).limit(limit).offset(offset);
   res.json(users.map((u) => ({ ...u, joinedAt: u.joinedAt.toISOString() })));
@@ -111,7 +114,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 // GET /users/:id
 router.get("/:id", async (req: Request, res: Response) => {
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.params.id));
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, String(req.params.id)));
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   res.json({ ...user, joinedAt: user.joinedAt.toISOString() });
 });

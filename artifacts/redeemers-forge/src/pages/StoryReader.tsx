@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Heart, Bookmark, Share2, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { CommentsSection } from "@/components/CommentsSection";
 
 export default function StoryReader() {
   const params = useParams();
@@ -116,10 +117,7 @@ export default function StoryReader() {
       />
 
       <footer className="border-t border-border pt-8 mt-16">
-        <h3 className="text-2xl font-serif font-bold mb-8">Comments ({post.commentCount})</h3>
-        <div className="p-8 border border-dashed rounded-xl border-border text-center text-muted-foreground">
-          Comment section component goes here.
-        </div>
+        <CommentsSection postId={post.id} commentCount={post.commentCount} />
       </footer>
     </article>
   );

@@ -5,12 +5,13 @@ import {
   postLikesTable,
   postBookmarksTable,
 } from "@workspace/db";
-import { eq, desc, and, ilike, or, sql, inArray } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import {
   ListPostsQueryParams,
   CreatePostBody,
   UpdatePostBody,
 } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
 
 const router = Router();
 
@@ -27,13 +28,23 @@ function estimateReadingTime(content: string): number {
   return Math.max(1, Math.ceil(words / 200));
 }
 
+function serializePost(p: typeof postsTable.$inferSelect, extra: Record<string, unknown> = {}) {
+  return {
+    ...p,
+    publishedAt: p.publishedAt?.toISOString() ?? null,
+    createdAt: p.createdAt.toISOString(),
+    isLiked: null as boolean | null,
+    isBookmarked: null as boolean | null,
+    ...extra,
+  };
+}
+
 // GET /posts
 router.get("/", async (req: Request, res: Response) => {
   const query = ListPostsQueryParams.safeParse(req.query);
   const params = query.success ? query.data : {};
-  const { type, category, tag, featured, premium, limit = 20, offset = 0 } = params as {
-    type?: string; category?: string; tag?: string;
-    featured?: boolean; premium?: boolean; limit?: number; offset?: number;
+  const { type, category, featured, premium, limit = 20, offset = 0 } = params as {
+    type?: string; category?: string; featured?: boolean; premium?: boolean; limit?: number; offset?: number;
   };
 
   const conditions: ReturnType<typeof eq>[] = [];
@@ -56,29 +67,11 @@ router.get("/", async (req: Request, res: Response) => {
     db.select({ count: sql<number>`count(*)` }).from(postsTable).where(whereClause),
   ]);
 
-  const userId = req.headers["x-user-id"] as string | undefined;
-  let likedIds: number[] = [];
-  let bookmarkedIds: number[] = [];
-
-  if (userId && posts.length > 0) {
-    const postIds = posts.map((p) => p.id);
-    const [likes, bookmarks] = await Promise.all([
-      db.select().from(postLikesTable).where(and(eq(postLikesTable.userId, userId), inArray(postLikesTable.postId, postIds))),
-      db.select().from(postBookmarksTable).where(and(eq(postBookmarksTable.userId, userId), inArray(postBookmarksTable.postId, postIds))),
-    ]);
-    likedIds = likes.map((l) => l.postId);
-    bookmarkedIds = bookmarks.map((b) => b.postId);
-  }
+  const total = Number(countResult[0]?.count ?? 0);
 
   res.json({
-    posts: posts.map((p) => ({
-      ...p,
-      publishedAt: p.publishedAt?.toISOString() ?? null,
-      createdAt: p.createdAt.toISOString(),
-      isLiked: userId ? likedIds.includes(p.id) : null,
-      isBookmarked: userId ? bookmarkedIds.includes(p.id) : null,
-    })),
-    total: Number(countResult[0]?.count ?? 0),
+    posts: posts.map((p) => serializePost(p)),
+    total,
   });
 });
 
@@ -89,13 +82,7 @@ router.get("/featured", async (_req: Request, res: Response) => {
     .orderBy(desc(postsTable.publishedAt))
     .limit(5);
 
-  res.json(posts.map((p) => ({
-    ...p,
-    publishedAt: p.publishedAt?.toISOString() ?? null,
-    createdAt: p.createdAt.toISOString(),
-    isLiked: null,
-    isBookmarked: null,
-  })));
+  res.json(posts.map((p) => serializePost(p)));
 });
 
 // GET /posts/trending
@@ -105,29 +92,23 @@ router.get("/trending", async (_req: Request, res: Response) => {
     .orderBy(desc(postsTable.likeCount), desc(postsTable.viewCount))
     .limit(6);
 
-  res.json(posts.map((p) => ({
-    ...p,
-    publishedAt: p.publishedAt?.toISOString() ?? null,
-    createdAt: p.createdAt.toISOString(),
-    isLiked: null,
-    isBookmarked: null,
-  })));
+  res.json(posts.map((p) => serializePost(p)));
 });
 
 // GET /posts/:id
 router.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const [post] = await db.select().from(postsTable).where(eq(postsTable.id, id));
   if (!post) { res.status(404).json({ error: "Post not found" }); return; }
 
-  // Increment view count
   await db.update(postsTable).set({ viewCount: sql`${postsTable.viewCount} + 1` }).where(eq(postsTable.id, id));
 
-  const userId = req.headers["x-user-id"] as string | undefined;
-  let isLiked = null;
-  let isBookmarked = null;
+  const auth = getAuth(req);
+  const userId = auth?.userId ?? null;
+  let isLiked: boolean | null = null;
+  let isBookmarked: boolean | null = null;
 
   if (userId) {
     const [like, bookmark] = await Promise.all([
@@ -138,14 +119,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     isBookmarked = bookmark.length > 0;
   }
 
-  res.json({
-    ...post,
-    viewCount: post.viewCount + 1,
-    publishedAt: post.publishedAt?.toISOString() ?? null,
-    createdAt: post.createdAt.toISOString(),
-    isLiked,
-    isBookmarked,
-  });
+  res.json(serializePost(post, { viewCount: post.viewCount + 1, isLiked, isBookmarked }));
 });
 
 // POST /posts
@@ -165,40 +139,27 @@ router.post("/", async (req: Request, res: Response) => {
     publishedAt: data.publishedAt ? new Date(data.publishedAt) : new Date(),
   }).returning();
 
-  res.status(201).json({
-    ...post,
-    publishedAt: post.publishedAt?.toISOString() ?? null,
-    createdAt: post.createdAt.toISOString(),
-    isLiked: null,
-    isBookmarked: null,
-  });
+  res.status(201).json(serializePost(post));
 });
 
 // PATCH /posts/:id
 router.patch("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const parsed = UpdatePostBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
 
   const updateData: Partial<typeof postsTable.$inferInsert> = { ...parsed.data, updatedAt: new Date() };
-
   const [post] = await db.update(postsTable).set(updateData).where(eq(postsTable.id, id)).returning();
   if (!post) { res.status(404).json({ error: "Post not found" }); return; }
 
-  res.json({
-    ...post,
-    publishedAt: post.publishedAt?.toISOString() ?? null,
-    createdAt: post.createdAt.toISOString(),
-    isLiked: null,
-    isBookmarked: null,
-  });
+  res.json(serializePost(post));
 });
 
 // DELETE /posts/:id
 router.delete("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(postsTable).where(eq(postsTable.id, id));
   res.status(204).send();
@@ -206,9 +167,12 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
 // POST /posts/:postId/like
 router.post("/:postId/like", async (req: Request, res: Response) => {
-  const postId = parseInt(req.params.postId);
-  const userId = (req.headers["x-user-id"] as string) ?? "anonymous";
+  const postId = parseInt(String(req.params.postId));
   if (isNaN(postId)) { res.status(400).json({ error: "Invalid postId" }); return; }
+
+  const auth = getAuth(req);
+  const userId = auth?.userId;
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const [existing] = await db.select().from(postLikesTable)
     .where(and(eq(postLikesTable.postId, postId), eq(postLikesTable.userId, userId)));
@@ -228,9 +192,12 @@ router.post("/:postId/like", async (req: Request, res: Response) => {
 
 // POST /posts/:postId/bookmark
 router.post("/:postId/bookmark", async (req: Request, res: Response) => {
-  const postId = parseInt(req.params.postId);
-  const userId = (req.headers["x-user-id"] as string) ?? "anonymous";
+  const postId = parseInt(String(req.params.postId));
   if (isNaN(postId)) { res.status(400).json({ error: "Invalid postId" }); return; }
+
+  const auth = getAuth(req);
+  const userId = auth?.userId;
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   const [existing] = await db.select().from(postBookmarksTable)
     .where(and(eq(postBookmarksTable.postId, postId), eq(postBookmarksTable.userId, userId)));
