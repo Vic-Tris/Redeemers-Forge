@@ -1,22 +1,45 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: The Redeemer's Forge API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: posts
+    description: Content posts (stories, devotionals, articles, sermons)
+  - name: videos
+    description: Video content
+  - name: books
+    description: Book library
+  - name: categories
+    description: Content categories
+  - name: comments
+    description: Comments and replies
+  - name: likes
+    description: Likes on posts and comments
+  - name: bookmarks
+    description: User bookmarks
+  - name: users
+    description: User profiles
+  - name: search
+    description: Global search
+  - name: analytics
+    description: Analytics and stats
+  - name: subscriptions
+    description: Premium subscriptions
+  - name: notifications
+    description: User notifications
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +47,691 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── POSTS ──────────────────────────────────────────────
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [posts]
+      summary: List posts with filters
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [story, devotional, article, sermon, announcement, testimonial, reflection]
+        - name: category
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: tag
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: featured
+          in: query
+          schema:
+            type: ["boolean", "null"]
+        - name: premium
+          in: query
+          schema:
+            type: ["boolean", "null"]
+        - name: limit
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: offset
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostList"
+    post:
+      operationId: createPost
+      tags: [posts]
+      summary: Create a new post (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        "201":
+          description: Created post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+
+  /posts/featured:
+    get:
+      operationId: getFeaturedPosts
+      tags: [posts]
+      summary: Get featured posts for homepage hero
+      responses:
+        "200":
+          description: Featured posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+  /posts/trending:
+    get:
+      operationId: getTrendingPosts
+      tags: [posts]
+      summary: Get trending posts (most liked/viewed this week)
+      responses:
+        "200":
+          description: Trending posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+  /posts/{id}:
+    get:
+      operationId: getPost
+      tags: [posts]
+      summary: Get a single post by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePost
+      tags: [posts]
+      summary: Update a post (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUpdate"
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+    delete:
+      operationId: deletePost
+      tags: [posts]
+      summary: Delete a post (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── VIDEOS ──────────────────────────────────────────────
+  /videos:
+    get:
+      operationId: listVideos
+      tags: [videos]
+      summary: List videos
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: featured
+          in: query
+          schema:
+            type: ["boolean", "null"]
+        - name: limit
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: offset
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Video list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+    post:
+      operationId: createVideo
+      tags: [videos]
+      summary: Create video entry (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoInput"
+      responses:
+        "201":
+          description: Created video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+
+  /videos/{id}:
+    get:
+      operationId: getVideo
+      tags: [videos]
+      summary: Get a single video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+
+  # ─── BOOKS ──────────────────────────────────────────────
+  /books:
+    get:
+      operationId: listBooks
+      tags: [books]
+      summary: List books
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: premium
+          in: query
+          schema:
+            type: ["boolean", "null"]
+        - name: limit
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Book list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+    post:
+      operationId: createBook
+      tags: [books]
+      summary: Create a book (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookInput"
+      responses:
+        "201":
+          description: Created book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+
+  /books/{id}:
+    get:
+      operationId: getBook
+      tags: [books]
+      summary: Get a single book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+
+  # ─── CATEGORIES ──────────────────────────────────────────
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a category (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  # ─── COMMENTS ──────────────────────────────────────────
+  /posts/{postId}/comments:
+    get:
+      operationId: getPostComments
+      tags: [comments]
+      summary: Get comments for a post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+    post:
+      operationId: submitComment
+      tags: [comments]
+      summary: Post a comment
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+      responses:
+        "201":
+          description: Created comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
+  /comments/{id}:
+    patch:
+      operationId: updateComment
+      tags: [comments]
+      summary: Edit a comment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentUpdate"
+      responses:
+        "200":
+          description: Updated comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+    delete:
+      operationId: deleteComment
+      tags: [comments]
+      summary: Delete a comment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── LIKES ──────────────────────────────────────────────
+  /posts/{postId}/like:
+    post:
+      operationId: likePost
+      tags: [likes]
+      summary: Like a post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Like toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeResult"
+
+  # ─── BOOKMARKS ──────────────────────────────────────────
+  /posts/{postId}/bookmark:
+    post:
+      operationId: bookmarkPost
+      tags: [bookmarks]
+      summary: Bookmark/unbookmark a post
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Bookmark toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookmarkResult"
+
+  /bookmarks:
+    get:
+      operationId: listBookmarks
+      tags: [bookmarks]
+      summary: List current user's bookmarks
+      responses:
+        "200":
+          description: Bookmarked posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+  # ─── USERS / PROFILE ────────────────────────────────────
+  /users/me:
+    get:
+      operationId: getMyProfile
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateMyProfile
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/me/dashboard:
+    get:
+      operationId: getMyDashboard
+      tags: [users]
+      summary: Get personalized user dashboard data
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDashboard"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin)
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: offset
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserProfile"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user profile by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  # ─── SEARCH ──────────────────────────────────────────────
+  /search:
+    get:
+      operationId: globalSearch
+      tags: [search]
+      summary: Global search across all content
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: ["string", "null"]
+            enum: [post, video, book, null]
+        - name: limit
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+
+  # ─── ANALYTICS ──────────────────────────────────────────
+  /analytics/global:
+    get:
+      operationId: getGlobalAnalytics
+      tags: [analytics]
+      summary: Get global platform analytics (admin)
+      responses:
+        "200":
+          description: Global analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalAnalytics"
+
+  /analytics/posts/{id}:
+    get:
+      operationId: getPostAnalytics
+      tags: [analytics]
+      summary: Get analytics for a specific post (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Post analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostAnalytics"
+
+  # ─── SUBSCRIPTIONS ──────────────────────────────────────
+  /subscriptions/plans:
+    get:
+      operationId: listPlans
+      tags: [subscriptions]
+      summary: Get available subscription plans
+      responses:
+        "200":
+          description: Subscription plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionPlan"
+
+  /subscriptions/my:
+    get:
+      operationId: getMySubscription
+      tags: [subscriptions]
+      summary: Get current user's subscription
+      responses:
+        "200":
+          description: User subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSubscription"
+
+  /subscriptions/checkout:
+    post:
+      operationId: createCheckout
+      tags: [subscriptions]
+      summary: Create checkout session for subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutInput"
+      responses:
+        "200":
+          description: Checkout URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResult"
+
+  # ─── NOTIFICATIONS ──────────────────────────────────────
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: Get user notifications
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: ["boolean", "null"]
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Done
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +742,363 @@ components:
       required:
         - status
 
+    # ─── Post schemas ────────────────────────────────────
+    Post:
+      type: object
+      required: [id, title, type, slug, excerpt, content, authorName, authorAvatar, coverImage, isPremium, isFeatured, readingTimeMinutes, viewCount, likeCount, commentCount, bookmarkCount, publishedAt, createdAt]
+      properties:
+        id:          { type: integer }
+        title:       { type: string }
+        type:        { type: string }
+        slug:        { type: string }
+        excerpt:     { type: string }
+        content:     { type: string }
+        authorName:  { type: string }
+        authorId:    { type: ["string", "null"] }
+        authorAvatar: { type: ["string", "null"] }
+        coverImage:  { type: ["string", "null"] }
+        category:    { type: ["string", "null"] }
+        tags:        { type: array, items: { type: string } }
+        isPremium:   { type: boolean }
+        isFeatured:  { type: boolean }
+        isPublished: { type: boolean }
+        readingTimeMinutes: { type: integer }
+        viewCount:   { type: integer }
+        likeCount:   { type: integer }
+        commentCount: { type: integer }
+        bookmarkCount: { type: integer }
+        publishedAt: { type: ["string", "null"] }
+        createdAt:   { type: string }
+        isLiked:     { type: ["boolean", "null"] }
+        isBookmarked: { type: ["boolean", "null"] }
+
+    PostList:
+      type: object
+      required: [posts, total]
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        total:
+          type: integer
+
+    PostInput:
+      type: object
+      required: [title, type, content, excerpt]
+      properties:
+        title:       { type: string }
+        type:        { type: string }
+        content:     { type: string }
+        excerpt:     { type: string }
+        category:    { type: ["string", "null"] }
+        tags:        { type: array, items: { type: string } }
+        coverImage:  { type: ["string", "null"] }
+        isPremium:   { type: boolean }
+        isFeatured:  { type: boolean }
+        isPublished: { type: boolean }
+        readingTimeMinutes: { type: ["integer", "null"] }
+        publishedAt: { type: ["string", "null"] }
+
+    PostUpdate:
+      type: object
+      properties:
+        title:       { type: ["string", "null"] }
+        content:     { type: ["string", "null"] }
+        excerpt:     { type: ["string", "null"] }
+        category:    { type: ["string", "null"] }
+        tags:        { type: array, items: { type: string } }
+        coverImage:  { type: ["string", "null"] }
+        isPremium:   { type: ["boolean", "null"] }
+        isFeatured:  { type: ["boolean", "null"] }
+        isPublished: { type: ["boolean", "null"] }
+        readingTimeMinutes: { type: ["integer", "null"] }
+
+    # ─── Video schemas ────────────────────────────────────
+    Video:
+      type: object
+      required: [id, title, description, thumbnailUrl, videoUrl, category, viewCount, likeCount, duration, isPremium, isFeatured, createdAt]
+      properties:
+        id:           { type: integer }
+        title:        { type: string }
+        description:  { type: string }
+        thumbnailUrl: { type: ["string", "null"] }
+        videoUrl:     { type: string }
+        category:     { type: ["string", "null"] }
+        viewCount:    { type: integer }
+        likeCount:    { type: integer }
+        duration:     { type: string }
+        isPremium:    { type: boolean }
+        isFeatured:   { type: boolean }
+        createdAt:    { type: string }
+
+    VideoInput:
+      type: object
+      required: [title, description, videoUrl]
+      properties:
+        title:        { type: string }
+        description:  { type: string }
+        thumbnailUrl: { type: ["string", "null"] }
+        videoUrl:     { type: string }
+        category:     { type: ["string", "null"] }
+        duration:     { type: ["string", "null"] }
+        isPremium:    { type: boolean }
+        isFeatured:   { type: boolean }
+
+    # ─── Book schemas ─────────────────────────────────────
+    Book:
+      type: object
+      required: [id, title, author, description, coverUrl, category, isPremium, price, createdAt]
+      properties:
+        id:          { type: integer }
+        title:       { type: string }
+        author:      { type: string }
+        description: { type: string }
+        coverUrl:    { type: ["string", "null"] }
+        downloadUrl: { type: ["string", "null"] }
+        category:    { type: ["string", "null"] }
+        isPremium:   { type: boolean }
+        price:       { type: ["number", "null"] }
+        pages:       { type: ["integer", "null"] }
+        createdAt:   { type: string }
+
+    BookInput:
+      type: object
+      required: [title, author, description]
+      properties:
+        title:       { type: string }
+        author:      { type: string }
+        description: { type: string }
+        coverUrl:    { type: ["string", "null"] }
+        downloadUrl: { type: ["string", "null"] }
+        category:    { type: ["string", "null"] }
+        isPremium:   { type: boolean }
+        price:       { type: ["number", "null"] }
+        pages:       { type: ["integer", "null"] }
+
+    # ─── Category schemas ─────────────────────────────────
+    Category:
+      type: object
+      required: [id, name, slug, description, postCount]
+      properties:
+        id:          { type: integer }
+        name:        { type: string }
+        slug:        { type: string }
+        description: { type: ["string", "null"] }
+        icon:        { type: ["string", "null"] }
+        postCount:   { type: integer }
+
+    CategoryInput:
+      type: object
+      required: [name, slug]
+      properties:
+        name:        { type: string }
+        slug:        { type: string }
+        description: { type: ["string", "null"] }
+        icon:        { type: ["string", "null"] }
+
+    # ─── Comment schemas ──────────────────────────────────
+    Comment:
+      type: object
+      required: [id, postId, content, authorName, authorAvatar, likeCount, createdAt]
+      properties:
+        id:           { type: integer }
+        postId:       { type: integer }
+        parentId:     { type: ["integer", "null"] }
+        authorId:     { type: ["string", "null"] }
+        authorName:   { type: string }
+        authorAvatar: { type: ["string", "null"] }
+        content:      { type: string }
+        likeCount:    { type: integer }
+        isPinned:     { type: boolean }
+        replies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+        createdAt:    { type: string }
+
+    CommentInput:
+      type: object
+      required: [content]
+      properties:
+        content:  { type: string }
+        parentId: { type: ["integer", "null"] }
+
+    CommentUpdate:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string }
+
+    # ─── Like/Bookmark result ─────────────────────────────
+    LikeResult:
+      type: object
+      required: [liked, likeCount]
+      properties:
+        liked:     { type: boolean }
+        likeCount: { type: integer }
+
+    BookmarkResult:
+      type: object
+      required: [bookmarked]
+      properties:
+        bookmarked: { type: boolean }
+
+    # ─── User schemas ─────────────────────────────────────
+    UserProfile:
+      type: object
+      required: [id, name, username, email, role, isPremium, joinedAt]
+      properties:
+        id:            { type: string }
+        name:          { type: string }
+        username:      { type: ["string", "null"] }
+        email:         { type: string }
+        bio:           { type: ["string", "null"] }
+        avatar:        { type: ["string", "null"] }
+        role:          { type: string }
+        isPremium:     { type: boolean }
+        joinedAt:      { type: string }
+        postCount:     { type: integer }
+        likeCount:     { type: integer }
+        bookmarkCount: { type: integer }
+        darkMode:      { type: boolean }
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        name:     { type: ["string", "null"] }
+        username: { type: ["string", "null"] }
+        bio:      { type: ["string", "null"] }
+        avatar:   { type: ["string", "null"] }
+        darkMode: { type: ["boolean", "null"] }
+
+    UserDashboard:
+      type: object
+      required: [recentActivity, likedPosts, bookmarkedPosts, readingStats]
+      properties:
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        likedPosts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        bookmarkedPosts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        readingStats:
+          $ref: "#/components/schemas/ReadingStats"
+
+    ReadingStats:
+      type: object
+      required: [totalPostsRead, totalLikes, totalBookmarks, totalComments]
+      properties:
+        totalPostsRead:  { type: integer }
+        totalLikes:      { type: integer }
+        totalBookmarks:  { type: integer }
+        totalComments:   { type: integer }
+
+    # ─── Search schemas ───────────────────────────────────
+    SearchResults:
+      type: object
+      required: [posts, videos, books, total]
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+        books:
+          type: array
+          items:
+            $ref: "#/components/schemas/Book"
+        total:
+          type: integer
+
+    # ─── Analytics schemas ────────────────────────────────
+    GlobalAnalytics:
+      type: object
+      required: [totalUsers, totalPosts, totalViews, totalComments, totalPremiumUsers, revenueTotal, topPosts, recentSignups]
+      properties:
+        totalUsers:        { type: integer }
+        totalPosts:        { type: integer }
+        totalViews:        { type: integer }
+        totalComments:     { type: integer }
+        totalPremiumUsers: { type: integer }
+        revenueTotal:      { type: number }
+        topPosts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        recentSignups:     { type: integer }
+
+    PostAnalytics:
+      type: object
+      required: [postId, views, likes, comments, bookmarks, shares]
+      properties:
+        postId:    { type: integer }
+        views:     { type: integer }
+        likes:     { type: integer }
+        comments:  { type: integer }
+        bookmarks: { type: integer }
+        shares:    { type: integer }
+
+    # ─── Subscription schemas ─────────────────────────────
+    SubscriptionPlan:
+      type: object
+      required: [id, name, description, price, interval, features]
+      properties:
+        id:          { type: string }
+        name:        { type: string }
+        description: { type: string }
+        price:       { type: number }
+        interval:    { type: string }
+        features:
+          type: array
+          items:
+            type: string
+
+    UserSubscription:
+      type: object
+      required: [isPremium, plan, status]
+      properties:
+        isPremium:   { type: boolean }
+        plan:        { type: ["string", "null"] }
+        status:      { type: string }
+        renewsAt:    { type: ["string", "null"] }
+        cancelledAt: { type: ["string", "null"] }
+
+    CheckoutInput:
+      type: object
+      required: [planId]
+      properties:
+        planId: { type: string }
+
+    CheckoutResult:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
+
+    # ─── Notification schemas ─────────────────────────────
+    Notification:
+      type: object
+      required: [id, type, message, isRead, createdAt]
+      properties:
+        id:        { type: integer }
+        type:      { type: string }
+        message:   { type: string }
+        postId:    { type: ["integer", "null"] }
+        isRead:    { type: boolean }
+        createdAt: { type: string }
+
+    SuccessResult:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }

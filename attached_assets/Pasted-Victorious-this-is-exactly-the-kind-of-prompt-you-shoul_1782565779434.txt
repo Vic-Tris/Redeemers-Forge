@@ -1,0 +1,850 @@
+Victorious, this is exactly the kind of prompt you should give to an advanced AI coding agent (such as ChatGPT, Claude Code, Gemini, Replit AI, Cursor AI, Lovable, Bolt, or Windsurf). It is written as a complete software specification rather than a simple request, which greatly reduces errors and missing features.
+
+---
+
+# MASTER AI PROMPT
+
+You are a Senior Full-Stack Software Engineer, UI/UX Designer, Database Architect, Security Engineer, DevOps Engineer, and Performance Optimization Expert.
+
+Your task is to build a **production-ready**, **fully responsive**, **high-performance**, **secure**, and **modern** Christian content platform named:
+
+# THE REDEEMER'S FORGE
+
+The website should combine the strengths of:
+
+* Deep Thoughts International
+* Substack
+* Facebook
+
+The final product should NOT be a copy of any website. Instead, it should combine the best ideas from each platform while having its own unique branding, user experience, and architecture.
+
+The website should be scalable enough to support over 1 million users.
+
+---
+
+# PRIMARY PURPOSE
+
+The Redeemer's Forge is a Christian platform where believers can:
+
+* Read devotionals
+* Read Christian stories
+* Watch Christian videos
+* Read books
+* Interact with one another
+* Build a Christian community
+* Subscribe for updates
+* Purchase premium content
+* Grow spiritually
+
+---
+
+# DESIGN GOALS
+
+The website must feel:
+
+* Elegant
+* Premium
+* Modern
+* Fast
+* Professional
+* Clean
+* Warm
+* Spirit-filled
+
+The interface should immediately communicate excellence.
+
+Avoid clutter.
+
+Everything must have proper spacing.
+
+Typography must be highly readable.
+
+Animations should be smooth but minimal.
+
+---
+
+# COLOR PALETTE
+
+Primary:
+Deep Blue
+
+Secondary:
+Gold
+
+Accent:
+White
+
+Optional:
+Dark Charcoal
+
+Use gradients sparingly.
+
+The design should feel timeless.
+
+---
+
+# RESPONSIVENESS
+
+The website must work perfectly on:
+
+Desktop
+
+Laptop
+
+Tablet
+
+Android
+
+iPhone
+
+Large screens
+
+Small screens
+
+No broken layouts.
+
+No overflowing elements.
+
+No hidden buttons.
+
+---
+
+# PERFORMANCE
+
+Performance is a top priority.
+
+Requirements:
+
+* Lazy loading
+* Image optimization
+* Code splitting
+* Server-side rendering where appropriate
+* CDN-ready assets
+* Optimized database queries
+* Caching
+* Fast search indexing
+* Progressive loading
+* Minimal JavaScript bundle size
+
+The website should load in under two seconds on average.
+
+---
+
+# USER AUTHENTICATION
+
+Allow users to:
+
+Create account
+
+Login
+
+Logout
+
+Remember Me
+
+Forgot Password
+
+Reset Password via email
+
+Verify email address
+
+Secure password hashing
+
+Session management
+
+JWT or secure cookie authentication
+
+Google login (optional)
+
+Facebook login (optional)
+
+---
+
+# USER PROFILE
+
+Each user should have:
+
+Profile picture
+
+Name
+
+Username
+
+Email
+
+Bio
+
+Joined date
+
+Saved posts
+
+Liked posts
+
+Reading history
+
+Premium membership status
+
+Notification preferences
+
+Dark mode preference
+
+Activity history
+
+---
+
+# USER DASHBOARD
+
+Create a beautiful dashboard showing:
+
+Recent activity
+
+Recently viewed stories
+
+Liked posts
+
+Comments made
+
+Replies made
+
+Bookmarks
+
+Premium purchases
+
+Subscription status
+
+Notification settings
+
+Security settings
+
+Password change
+
+Profile editing
+
+Reading statistics
+
+Time spent reading
+
+---
+
+# USER FEATURES
+
+Users can:
+
+Like posts
+
+Unlike posts
+
+Comment
+
+Reply to comments
+
+Edit their comments
+
+Delete their comments
+
+Share posts
+
+Bookmark posts
+
+Follow categories
+
+Receive notifications
+
+Search posts
+
+Filter posts
+
+Report inappropriate comments
+
+Receive email notifications
+
+Receive browser push notifications
+
+Toggle Dark Mode
+
+Toggle Light Mode
+
+---
+
+# NOTIFICATIONS
+
+Users receive notifications when:
+
+A new story is published
+
+A new devotional is published
+
+Someone replies to their comment
+
+Someone likes their comment
+
+Premium content becomes available
+
+Announcements are made
+
+Support browser push notifications.
+
+Support email notifications.
+
+---
+
+# CONTENT TYPES
+
+Admin can publish:
+
+Stories
+
+Devotionals
+
+Books
+
+Videos
+
+Articles
+
+Announcements
+
+Testimonials
+
+Events
+
+Sermons
+
+Audio messages
+
+Daily reflections
+
+---
+
+# STORIES SECTION
+
+Beautiful reading interface similar to modern reading platforms.
+
+Features:
+
+Estimated reading time
+
+Reading progress bar
+
+Like button
+
+Comment system
+
+Reply system
+
+Share button
+
+Bookmark button
+
+Related stories
+
+Author information
+
+Previous and Next navigation
+
+Font size adjustment
+
+Dark mode support
+
+---
+
+# VIDEO SECTION
+
+Create a dedicated video library.
+
+Features:
+
+Categories
+
+Search
+
+Video thumbnails
+
+Video descriptions
+
+View count
+
+Like count
+
+Comments
+
+Replies
+
+Watch history
+
+Continue watching
+
+Featured videos
+
+Trending videos
+
+Recently uploaded
+
+---
+
+# BOOK SECTION
+
+Dedicated library.
+
+Each book includes:
+
+Cover
+
+Description
+
+Author
+
+Category
+
+Preview
+
+Download (if free)
+
+Purchase (if premium)
+
+Reading progress
+
+Bookmarks
+
+---
+
+# PREMIUM CONTENT
+
+Some content should require payment.
+
+Support:
+
+Monthly subscription
+
+Yearly subscription
+
+One-time purchase
+
+Payment gateways:
+
+Stripe
+
+PayPal
+
+Flutterwave
+
+Paystack
+
+After successful payment:
+
+Unlock premium content instantly.
+
+Track purchases.
+
+Generate receipts.
+
+---
+
+# SEARCH
+
+Global search.
+
+Users can search:
+
+Stories
+
+Books
+
+Videos
+
+Authors
+
+Categories
+
+Tags
+
+Search should be fast.
+
+Autocomplete suggestions.
+
+Recent searches.
+
+Popular searches.
+
+---
+
+# ADMIN PANEL
+
+Powerful Admin Dashboard.
+
+Admin can:
+
+Create posts
+
+Edit posts
+
+Delete posts
+
+Publish immediately
+
+Schedule publishing
+
+Upload videos
+
+Upload books
+
+Manage users
+
+Manage premium subscriptions
+
+Approve comments
+
+Delete comments
+
+Suspend users
+
+Send announcements
+
+Create categories
+
+Create tags
+
+Manage homepage
+
+Manage featured content
+
+Manage newsletters
+
+View reports
+
+Manage payments
+
+Export analytics
+
+Backup database
+
+Restore backups
+
+---
+
+# POST ANALYTICS
+
+Admin can search posts by title.
+
+Clicking a post opens analytics showing:
+
+Views
+
+Likes
+
+Comments
+
+Replies
+
+Bookmarks
+
+Shares
+
+Reading time
+
+Bounce rate
+
+Traffic sources
+
+Revenue
+
+Premium purchases
+
+Daily performance
+
+Weekly performance
+
+Monthly performance
+
+---
+
+# GLOBAL ANALYTICS
+
+Dashboard showing:
+
+Most viewed posts
+
+Most liked posts
+
+Most commented posts
+
+Fastest growing posts
+
+Most shared posts
+
+Top categories
+
+Top authors
+
+User growth
+
+Revenue
+
+Subscriptions
+
+Traffic
+
+Real-time visitors
+
+Interactive charts
+
+Graphs
+
+Export reports
+
+---
+
+# COMMUNITY FEATURES
+
+Users can:
+
+Reply to replies
+
+Mention users
+
+Receive mention notifications
+
+Report abuse
+
+Block users
+
+Follow discussions
+
+Sort comments
+
+Newest
+
+Oldest
+
+Most liked
+
+Pinned comments
+
+---
+
+# EMAIL SYSTEM
+
+Automated emails:
+
+Welcome email
+
+Password reset
+
+Email verification
+
+Subscription confirmation
+
+Premium purchase receipt
+
+New post notifications
+
+Weekly newsletter
+
+---
+
+# SECURITY
+
+Implement:
+
+Rate limiting
+
+CSRF protection
+
+XSS protection
+
+SQL injection prevention
+
+Secure authentication
+
+Encrypted passwords
+
+Secure file uploads
+
+Spam filtering
+
+Bot protection
+
+Input validation
+
+Role-based permissions
+
+Audit logs
+
+Two-factor authentication (optional)
+
+---
+
+# SEO
+
+Fully optimized.
+
+Generate:
+
+Meta tags
+
+Open Graph tags
+
+Twitter cards
+
+Structured data
+
+XML sitemap
+
+Robots.txt
+
+Canonical URLs
+
+Readable URLs
+
+Breadcrumbs
+
+Automatic metadata
+
+---
+
+# ACCESSIBILITY
+
+Follow WCAG guidelines.
+
+Keyboard navigation
+
+Screen reader compatibility
+
+High contrast
+
+Accessible forms
+
+Accessible buttons
+
+Accessible modals
+
+---
+
+# TECHNOLOGY STACK
+
+Frontend:
+Next.js (App Router)
+
+React
+
+TypeScript
+
+Tailwind CSS
+
+Framer Motion
+
+Backend:
+Node.js
+
+NestJS (or Express)
+
+Database:
+PostgreSQL
+
+ORM:
+Prisma
+
+Authentication:
+NextAuth/Auth.js or Clerk
+
+Storage:
+Cloudinary or AWS S3
+
+Email:
+Resend
+
+Payments:
+Stripe
+Flutterwave
+Paystack
+PayPal
+
+Deployment:
+Vercel
+Docker
+GitHub Actions CI/CD
+
+---
+
+# CODE QUALITY
+
+Write production-level code.
+
+No placeholder logic.
+
+No duplicated code.
+
+No deprecated libraries.
+
+Proper folder structure.
+
+Reusable components.
+
+Type safety.
+
+Error handling.
+
+Logging.
+
+Validation.
+
+Documentation.
+
+Unit tests.
+
+Integration tests.
+
+---
+
+# FINAL REQUIREMENTS
+
+Generate the complete project with:
+
+Production-ready architecture
+
+Professional UI/UX
+
+Clean code
+
+Responsive design
+
+Scalable backend
+
+Secure authentication
+
+Fast loading
+
+No broken links
+
+No unfinished pages
+
+No missing functionality
+
+No dummy implementations
+
+Every button must work.
+
+Every form must validate correctly.
+
+Every feature must be connected to the backend.
+
+Every database relationship must be correct.
+
+The final project should be deployable immediately with minimal configuration and should represent a polished, enterprise-grade Christian digital platform ready for real users.
+
+This prompt is already comprehensive, but if your goal is to build **one of the best Christian platforms in Africa**, I would add features that neither Deep Thoughts, Substack, nor Facebook combine well:
+
+* AI-powered Bible search and Scripture recommendations.
+* Reading streaks, achievement badges, and daily devotion reminders.
+* Multi-language support (English, Yoruba, Igbo, Hausa, French).
+* Offline reading for books and stories.
+* Audio versions of stories and devotionals with text-to-speech.
+* Live streaming for sermons and events.
+* Prayer request wall with moderated comments.
+* Bible study groups and discussion forums.
+* Reading plans and progress tracking.
+* PWA support so users can install the website like a mobile app.
+* Comprehensive analytics for both users and administrators.
+* A recommendation engine that suggests stories, books, and videos based on user interests.
+
+With those additions, **The Redeemer's Forge** would go well beyond your reference sites and feel like a modern Christian social and publishing platform rather than just a content website.
