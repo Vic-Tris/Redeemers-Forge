@@ -3,12 +3,13 @@ import { db } from "@workspace/db";
 import { commentsTable, postsTable } from "@workspace/db";
 import { eq, and, desc, isNull, sql } from "drizzle-orm";
 import { SubmitCommentBody, UpdateCommentBody } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
 
 const router = Router({ mergeParams: true });
 
 // GET /posts/:postId/comments
 router.get("/posts/:postId/comments", async (req: Request, res: Response) => {
-  const postId = parseInt(req.params.postId);
+  const postId = parseInt(String(req.params.postId));
   if (isNaN(postId)) { res.status(400).json({ error: "Invalid postId" }); return; }
 
   const topLevel = await db.select().from(commentsTable)
@@ -42,26 +43,29 @@ router.get("/posts/:postId/comments", async (req: Request, res: Response) => {
 
 // POST /posts/:postId/comments
 router.post("/posts/:postId/comments", async (req: Request, res: Response) => {
-  const postId = parseInt(req.params.postId);
+  const postId = parseInt(String(req.params.postId));
   if (isNaN(postId)) { res.status(400).json({ error: "Invalid postId" }); return; }
 
   const parsed = SubmitCommentBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
 
-  const userId = req.headers["x-user-id"] as string | undefined;
-  const authorName = (req.headers["x-user-name"] as string) ?? "Anonymous";
-  const authorAvatar = req.headers["x-user-avatar"] as string | undefined;
+  const auth = getAuth(req);
+  const userId = auth?.userId ?? null;
+  const claims = auth?.sessionClaims;
+  const authorName = (claims?.firstName as string | undefined)
+    ?? (claims?.name as string | undefined)
+    ?? "Anonymous";
+  const authorAvatar = (claims?.imageUrl as string | undefined) ?? null;
 
   const [comment] = await db.insert(commentsTable).values({
     postId,
     parentId: parsed.data.parentId ?? null,
-    authorId: userId ?? null,
+    authorId: userId,
     authorName,
-    authorAvatar: authorAvatar ?? null,
+    authorAvatar,
     content: parsed.data.content,
   }).returning();
 
-  // Increment comment count on post
   await db.update(postsTable)
     .set({ commentCount: sql`${postsTable.commentCount} + 1` })
     .where(eq(postsTable.id, postId));
@@ -71,7 +75,7 @@ router.post("/posts/:postId/comments", async (req: Request, res: Response) => {
 
 // PATCH /comments/:id
 router.patch("/comments/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const parsed = UpdateCommentBody.safeParse(req.body);
@@ -88,7 +92,7 @@ router.patch("/comments/:id", async (req: Request, res: Response) => {
 
 // DELETE /comments/:id
 router.delete("/comments/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(commentsTable).where(eq(commentsTable.id, id));
   res.status(204).send();

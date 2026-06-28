@@ -1,0 +1,4 @@
+- [Clerk auth wiring](clerk-auth-wiring.md) — Clerk fully wired; all protected routes use getAuth/requireAuth from @clerk/express, not x-user-id headers
+- [DB lib stale declarations](db-lib-stale.md) — Run pnpm run typecheck:libs before leaf artifact typechecks; missing exports from @workspace/db mean stale declarations
+- [Express 5 params casting](express5-params.md) — Always wrap req.params.* with String() before parseInt/eq; Express 5 types return string | string[]
+- [Drizzle null vs undefined](drizzle-null-undefined.md) — Drizzle insert/update rejects null for non-nullable columns; convert null to undefined with ?? undefined

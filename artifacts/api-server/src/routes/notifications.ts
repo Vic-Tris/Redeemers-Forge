@@ -2,12 +2,13 @@ import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { notificationsTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
+import { getAuth } from "@clerk/express";
 
 const router = Router();
 
 // GET /notifications
 router.get("/", async (req: Request, res: Response) => {
-  const userId = req.headers["x-user-id"] as string | undefined;
+  const userId = getAuth(req)?.userId;
   if (!userId) { res.json([]); return; }
 
   const unreadOnly = req.query.unreadOnly === "true";
@@ -27,7 +28,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 // POST /notifications/read-all
 router.post("/read-all", async (req: Request, res: Response) => {
-  const userId = req.headers["x-user-id"] as string | undefined;
+  const userId = getAuth(req)?.userId;
   if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
 
   await db.update(notificationsTable)

@@ -157,7 +157,10 @@ function Router() {
         <Route path="/premium" component={Premium} />
         <Route path="/dashboard">
           {() => (
-            <Show when="signed-in" fallback={<Show when="signed-out"><Dashboard /></Show>}>
+            <Show
+              when="signed-in"
+              fallback={<SignInPage />}
+            >
               <Dashboard />
             </Show>
           )}

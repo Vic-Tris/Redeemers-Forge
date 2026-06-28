@@ -150,7 +150,20 @@ router.patch("/:id", async (req: Request, res: Response) => {
   const parsed = UpdatePostBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
 
-  const updateData: Partial<typeof postsTable.$inferInsert> = { ...parsed.data, updatedAt: new Date() };
+  const d = parsed.data;
+  const updateData: Partial<typeof postsTable.$inferInsert> = {
+    updatedAt: new Date(),
+    ...(d.title != null ? { title: d.title } : {}),
+    ...(d.excerpt != null ? { excerpt: d.excerpt } : {}),
+    ...(d.content != null ? { content: d.content } : {}),
+    ...(d.coverImage != null ? { coverImage: d.coverImage } : {}),
+    ...(d.category != null ? { category: d.category } : {}),
+    ...(d.tags != null ? { tags: d.tags } : {}),
+    ...(d.isPremium != null ? { isPremium: d.isPremium } : {}),
+    ...(d.isFeatured != null ? { isFeatured: d.isFeatured } : {}),
+    ...(d.isPublished != null ? { isPublished: d.isPublished } : {}),
+    ...(d.readingTimeMinutes != null ? { readingTimeMinutes: d.readingTimeMinutes } : {}),
+  };
   const [post] = await db.update(postsTable).set(updateData).where(eq(postsTable.id, id)).returning();
   if (!post) { res.status(404).json({ error: "Post not found" }); return; }
 

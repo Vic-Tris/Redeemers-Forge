@@ -2,12 +2,13 @@ import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { postBookmarksTable, postsTable } from "@workspace/db";
 import { eq, inArray, desc } from "drizzle-orm";
+import { getAuth } from "@clerk/express";
 
 const router = Router();
 
 // GET /bookmarks
 router.get("/", async (req: Request, res: Response) => {
-  const userId = req.headers["x-user-id"] as string | undefined;
+  const userId = getAuth(req)?.userId;
   if (!userId) { res.json([]); return; }
 
   const bookmarks = await db.select().from(postBookmarksTable)

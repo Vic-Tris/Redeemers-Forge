@@ -3,6 +3,8 @@ import { db } from "@workspace/db";
 import { subscriptionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { CreateCheckoutBody } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
+import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
@@ -43,9 +45,8 @@ router.get("/plans", (_req, res: Response) => {
 });
 
 // GET /subscriptions/my
-router.get("/my", async (req: Request, res: Response) => {
-  const userId = req.headers["x-user-id"] as string | undefined;
-  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+router.get("/my", requireAuth, async (req: Request, res: Response) => {
+  const userId = getAuth(req).userId!;
 
   const [sub] = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.userId, userId));
   if (!sub) {
@@ -63,7 +64,7 @@ router.get("/my", async (req: Request, res: Response) => {
 });
 
 // POST /subscriptions/checkout
-router.post("/checkout", async (req: Request, res: Response) => {
+router.post("/checkout", requireAuth, async (req: Request, res: Response) => {
   const parsed = CreateCheckoutBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid body" }); return; }
 

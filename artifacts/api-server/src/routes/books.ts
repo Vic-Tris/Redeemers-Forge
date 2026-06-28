@@ -44,7 +44,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 // GET /books/:id
 router.get("/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const [book] = await db.select().from(booksTable).where(eq(booksTable.id, id));

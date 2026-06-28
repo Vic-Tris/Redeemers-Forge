@@ -43,7 +43,7 @@ router.get("/global", async (_req: Request, res: Response) => {
 
 // GET /analytics/posts/:id
 router.get("/posts/:id", async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const [post] = await db.select().from(postsTable).where(eq(postsTable.id, id));
