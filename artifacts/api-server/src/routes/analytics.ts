@@ -1,12 +1,13 @@
 import { Router, type Request, type Response } from "express";
 import { db } from "@workspace/db";
 import { postsTable, usersTable, commentsTable } from "@workspace/db";
-import { eq, desc, sum, sql } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router = Router();
 
-// GET /analytics/global
-router.get("/global", async (_req: Request, res: Response) => {
+// GET /analytics/global — admin only
+router.get("/global", requireAdmin, async (_req: Request, res: Response) => {
   const [
     postCount,
     userCount,
@@ -41,8 +42,8 @@ router.get("/global", async (_req: Request, res: Response) => {
   });
 });
 
-// GET /analytics/posts/:id
-router.get("/posts/:id", async (req: Request, res: Response) => {
+// GET /analytics/posts/:id — admin only
+router.get("/posts/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id));
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 

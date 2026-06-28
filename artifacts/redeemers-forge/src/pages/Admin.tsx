@@ -3,15 +3,44 @@ import type { Post, Video, Book } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, FileText, Video as VideoIcon, BookOpen, Users, TrendingUp, Eye, MessageSquare } from "lucide-react";
+import { Shield, ShieldOff, FileText, Video as VideoIcon, BookOpen, Users, TrendingUp, Eye, MessageSquare, Lock } from "lucide-react";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { Link } from "wouter";
 
-export default function Admin() {
+function AccessDenied({ isSignedIn }: { isSignedIn: boolean }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 px-4">
+      <div className="p-5 rounded-full bg-destructive/10">
+        {isSignedIn ? (
+          <ShieldOff className="w-12 h-12 text-destructive" />
+        ) : (
+          <Lock className="w-12 h-12 text-muted-foreground" />
+        )}
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-serif font-bold">
+          {isSignedIn ? "Access Denied" : "Sign In Required"}
+        </h2>
+        <p className="text-muted-foreground max-w-sm">
+          {isSignedIn
+            ? "You don't have permission to view the admin panel."
+            : "Please sign in with an admin account to access this page."}
+        </p>
+      </div>
+      {!isSignedIn && (
+        <Link href="/sign-in">
+          <Button className="bg-primary text-primary-foreground">Sign In</Button>
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function AdminPanel() {
   const { data: analytics, isLoading: isLoadingAnalytics } = useGetGlobalAnalytics();
   const { data: posts, isLoading: isLoadingPosts } = useListPosts({ limit: 5 });
   const { data: videos, isLoading: isLoadingVideos } = useListVideos({ limit: 5 });
   const { data: books, isLoading: isLoadingBooks } = useListBooks({ limit: 5 });
-
-  const isLoading = isLoadingAnalytics;
 
   const stats = [
     { icon: FileText, label: "Total Posts", value: analytics?.totalPosts ?? "—", color: "text-primary" },
@@ -45,7 +74,7 @@ export default function Admin() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
-                {isLoading ? (
+                {isLoadingAnalytics ? (
                   <Skeleton className="h-6 w-12 mt-1" />
                 ) : (
                   <p className="text-2xl font-bold font-serif">{value}</p>
@@ -87,7 +116,6 @@ export default function Admin() {
 
       {/* Content Tables */}
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Recent Posts */}
         <Card className="border-border bg-card lg:col-span-1">
           <CardHeader className="pb-3">
             <CardTitle className="font-serif text-base flex items-center justify-between">
@@ -111,7 +139,6 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* Recent Videos */}
         <Card className="border-border bg-card lg:col-span-1">
           <CardHeader className="pb-3">
             <CardTitle className="font-serif text-base flex items-center justify-between">
@@ -135,7 +162,6 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* Recent Books */}
         <Card className="border-border bg-card lg:col-span-1">
           <CardHeader className="pb-3">
             <CardTitle className="font-serif text-base flex items-center justify-between">
@@ -161,4 +187,25 @@ export default function Admin() {
       </div>
     </div>
   );
+}
+
+export default function Admin() {
+  const { isAdmin, isLoading, isSignedIn } = useAdminStatus();
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6">
+        <Skeleton className="h-10 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <AccessDenied isSignedIn={isSignedIn} />;
+  }
+
+  return <AdminPanel />;
 }

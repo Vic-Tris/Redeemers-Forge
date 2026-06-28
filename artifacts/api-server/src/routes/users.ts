@@ -8,8 +8,23 @@ import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
 async function upsertUser(id: string, name: string, email: string, avatar?: string | null) {
-  await db.insert(usersTable).values({ id, name, email, avatar: avatar ?? null }).onConflictDoNothing();
+  const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+  await db.insert(usersTable)
+    .values({ id, name, email, avatar: avatar ?? null, role: isAdmin ? "admin" : "user" })
+    .onConflictDoNothing();
+
+  // Promote existing user to admin if their email is in the list
+  if (isAdmin) {
+    await db.update(usersTable)
+      .set({ role: "admin" })
+      .where(eq(usersTable.id, id));
+  }
 }
 
 // GET /users/me
@@ -103,12 +118,15 @@ router.get("/me/dashboard", requireAuth, async (req: Request, res: Response) => 
   });
 });
 
-// GET /users
+// GET /users — excludes admin accounts from public listing
 router.get("/", async (req: Request, res: Response) => {
   const limit = parseInt(String(req.query.limit ?? "20"));
   const offset = parseInt(String(req.query.offset ?? "0"));
 
-  const users = await db.select().from(usersTable).limit(limit).offset(offset);
+  const users = await db.select().from(usersTable)
+    .where(eq(usersTable.role, "user"))
+    .limit(limit)
+    .offset(offset);
   res.json(users.map((u) => ({ ...u, joinedAt: u.joinedAt.toISOString() })));
 });
 

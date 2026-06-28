@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "../ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Search, Bell, Menu, User, Crown, LogOut, LayoutDashboard, Shield } from "lucide-react";
+import { Search, Menu, User, Crown, LogOut, LayoutDashboard, Shield } from "lucide-react";
 import { useUser, useClerk, Show } from "@clerk/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAdminStatus } from "@/hooks/useAdminStatus";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -28,6 +29,7 @@ export function Navbar() {
   const { signOut } = useClerk();
   const [, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isAdmin } = useAdminStatus();
 
   const initials = user?.fullName
     ?.split(" ")
@@ -91,13 +93,20 @@ export function Navbar() {
                     <div className="px-3 py-2 border-b border-border">
                       <p className="text-sm font-medium truncate">{user?.fullName}</p>
                       <p className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+                      {isAdmin && (
+                        <span className="inline-flex items-center gap-1 mt-1 text-xs font-medium text-secondary">
+                          <Shield className="h-3 w-3" /> Admin
+                        </span>
+                      )}
                     </div>
                     <DropdownMenuItem onClick={() => setLocation("/dashboard")}>
                       <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setLocation("/admin")}>
-                      <Shield className="mr-2 h-4 w-4" /> Admin
-                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem onClick={() => setLocation("/admin")}>
+                        <Shield className="mr-2 h-4 w-4" /> Admin Panel
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => setLocation("/premium")}>
                       <Crown className="mr-2 h-4 w-4" /> Upgrade
                     </DropdownMenuItem>
@@ -161,6 +170,15 @@ export function Navbar() {
                   >
                     <Search className="h-4 w-4" /> Search
                   </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileOpen(false)}
+                      className="px-3 py-2.5 rounded-lg text-secondary hover:bg-secondary/10 transition-colors font-medium flex items-center gap-2"
+                    >
+                      <Shield className="h-4 w-4" /> Admin Panel
+                    </Link>
+                  )}
                 </nav>
                 <div className="border-t border-border pt-4 pb-2">
                   <Show when="signed-out">
@@ -182,6 +200,11 @@ export function Navbar() {
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">{user?.fullName}</p>
                         <p className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+                        {isAdmin && (
+                          <span className="text-xs font-medium text-secondary flex items-center gap-1">
+                            <Shield className="h-3 w-3" /> Admin
+                          </span>
+                        )}
                       </div>
                     </div>
                     <Button
