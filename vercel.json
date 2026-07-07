@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "artifacts/redeemers-forge/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/public"
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/artifacts/redeemers-forge/dist/public/index.html" }
+  ]
+}
