@@ -3,14 +3,24 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
+  "homepage": "https://github.com/Vic-Tris/Redeemers-Forge.git",
   "scripts": {
     "dev": "npm --prefix artifacts/redeemers-forge run dev",
     "build": "npm --prefix artifacts/redeemers-forge run build",
     "preview": "npm --prefix artifacts/redeemers-forge run preview",
-    "typecheck": "npm --prefix artifacts/redeemers-forge run typecheck"
+    "typecheck": "npm --prefix artifacts/redeemers-forge run typecheck",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d artifacts/redeemers-forge/dist"
   },
   "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "gh-pages": "^6.3.0",
     "prettier": "^3.8.4",
     "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   }
 }

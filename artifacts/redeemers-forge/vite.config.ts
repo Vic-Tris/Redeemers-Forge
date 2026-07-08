@@ -10,11 +10,25 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const port = Number(env.PORT || 3000);
   const host = env.HOST || "0.0.0.0";
-  const base = env.BASE_PATH || env.BASE_URL || "/";
+  
+  const base = mode === 'production' ? '/your-repository-name/' : (env.BASE_PATH || env.BASE_URL || "/");
 
   return {
     base,
-    plugins: [react(), tailwindcss({ optimize: false })],
+    plugins: [
+      // 👇 Custom Resolution Interceptor Plugin
+      {
+        name: 'force-nested-node-modules',
+        resolveId(source) {
+          if (source === 'react' || source.startsWith('react/')) {
+            return this.resolve(source, path.resolve(__dirname, 'package.json'), { skipSelf: true });
+          }
+          return null;
+        }
+      },
+      react(), 
+      tailwindcss({ optimize: false })
+    ],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),
@@ -28,9 +42,9 @@ export default defineConfig(({ mode }) => {
       },
       dedupe: ["react", "react-dom"],
     },
-    root: __dirname,
+    root: path.resolve(__dirname, "../../"),
     build: {
-      outDir: path.resolve(__dirname, "dist/public"),
+      outDir: path.resolve(__dirname, "dist"),
       emptyOutDir: true,
     },
     server: {
@@ -39,7 +53,7 @@ export default defineConfig(({ mode }) => {
       host,
       allowedHosts: true,
       fs: {
-        strict: true,
+        strict: false, 
       },
     },
     preview: {
