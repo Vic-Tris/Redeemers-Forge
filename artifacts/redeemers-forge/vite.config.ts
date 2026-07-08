@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   const port = Number(env.PORT || 3000);
   const host = env.HOST || "0.0.0.0";
   
-  const base = mode === 'production' ? '/your-repository-name/' : (env.BASE_PATH || env.BASE_URL || "/");
+  const base = mode === 'production' ? '/Redeemers-Forge/' : (env.BASE_PATH || env.BASE_URL || "/");
 
   return {
     base,
