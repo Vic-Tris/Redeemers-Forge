@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/react";
+import { useUser } from "@/lib/clerk-compat";
 import { useGetMyProfile, getGetMyProfileQueryKey } from "@workspace/api-client-react";
 
 export function useAdminStatus() {

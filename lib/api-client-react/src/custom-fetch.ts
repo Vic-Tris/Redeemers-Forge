@@ -367,5 +367,14 @@ export async function customFetch<T = unknown>(
     throw new ApiError(response, errorData, requestInfo);
   }
 
+  // A JSON API endpoint should never respond with an HTML document. This
+  // happens when the API server is not reachable and a dev server or host
+  // returns its SPA `index.html` fallback instead. Treat it as an error so
+  // callers keep an empty/undefined result rather than receiving markup.
+  if (getMediaType(response.headers) === "text/html") {
+    const errorData = await parseErrorBody(response, method);
+    throw new ApiError(response, errorData, requestInfo);
+  }
+
   return (await parseSuccessBody(response, responseType, requestInfo)) as T;
 }

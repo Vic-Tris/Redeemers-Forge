@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
-import { publishableKeyFromHost } from "@clerk/react/internal";
+import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { shadcn } from "@clerk/themes";
+import { Show } from "@/lib/clerk-compat";
 import { Switch, Route, useLocation, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Stories from "@/pages/Stories";
@@ -21,10 +22,11 @@ import Premium from "@/pages/Premium";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
 
-const clerkPubKey = publishableKeyFromHost(
-  window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-);
+// Only enable Clerk when an explicit publishable key is provided. Without it,
+// the app renders in a signed-out, public mode instead of crashing.
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as
+  | string
+  | undefined;
 
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 
@@ -87,6 +89,18 @@ const clerkAppearance = {
 
 const queryClient = new QueryClient();
 
+function AuthUnavailableNotice() {
+  return (
+    <div className="rounded-xl border border-dashed border-border bg-muted/40 p-6 text-center">
+      <p className="text-foreground font-serif">Sign-in is not available yet</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Authentication has not been configured for this environment. You can
+        continue browsing the site freely.
+      </p>
+    </div>
+  );
+}
+
 function SignInPage() {
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-12">
@@ -97,7 +111,11 @@ function SignInPage() {
             "Iron sharpens iron" — Proverbs 27:17
           </p>
         </div>
-        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+        {clerkPubKey ? (
+          <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+        ) : (
+          <AuthUnavailableNotice />
+        )}
       </div>
     </div>
   );
@@ -113,7 +131,11 @@ function SignUpPage() {
             Join a community of believers walking the path together
           </p>
         </div>
-        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+        {clerkPubKey ? (
+          <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+        ) : (
+          <AuthUnavailableNotice />
+        )}
       </div>
     </div>
   );
@@ -212,11 +234,28 @@ function ClerkProviderWithRoutes() {
   );
 }
 
+function PublicApp() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ErrorBoundary>
+          <Switch>
+            <Route path="/sign-in/*?" component={SignInPage} />
+            <Route path="/sign-up/*?" component={SignUpPage} />
+            <Route>{() => <Router />}</Route>
+          </Switch>
+        </ErrorBoundary>
+      </TooltipProvider>
+      <Toaster />
+    </QueryClientProvider>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="redeemers-forge-theme">
       <WouterRouter base={basePath}>
-        {clerkPubKey ? <ClerkProviderWithRoutes /> : <Router />}
+        {clerkPubKey ? <ClerkProviderWithRoutes /> : <PublicApp />}
       </WouterRouter>
     </ThemeProvider>
   );

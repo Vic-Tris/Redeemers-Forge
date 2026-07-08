@@ -61,5 +61,10 @@ export default defineConfig(({ mode }) => {
       host,
       allowedHosts: true,
     },
+    // Ensure source changes in the workspace `lib/` packages are watched and
+    // re-transformed during development.
+    optimizeDeps: {
+      exclude: ["@workspace/api-client-react"],
+    },
   };
 });

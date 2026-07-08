@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useGetPostComments, useSubmitComment } from "@workspace/api-client-react";
 import type { Comment } from "@workspace/api-client-react";
-import { useUser, Show } from "@clerk/react";
+import { useUser, Show } from "@/lib/clerk-compat";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

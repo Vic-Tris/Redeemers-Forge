@@ -4,7 +4,7 @@ import { ThemeToggle } from "../ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Search, Menu, User, Crown, LogOut, LayoutDashboard, Shield } from "lucide-react";
-import { useUser, useClerk, Show } from "@clerk/react";
+import { useUser, useClerk, Show } from "@/lib/clerk-compat";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
