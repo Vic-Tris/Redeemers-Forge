@@ -20,8 +20,12 @@ export default defineConfig(({ mode }) => {
         name: "force-nested-node-modules",
         async resolveId(source) {
           if (source === "react" || source.startsWith("react/")) {
-            const resolved = await this.resolve(source, path.resolve(__dirname, "package.json"), { skipSelf: true });
-            if (resolved) return resolved;
+            try {
+              const resolved = await this.resolve(source, path.resolve(__dirname, "package.json"), { skipSelf: true });
+              return resolved ?? null;
+            } catch {
+              return null;
+            }
           }
           return null;
         }
