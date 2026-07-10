@@ -11,19 +11,16 @@ export default defineConfig(({ mode }) => {
   const port = Number(env.PORT || 3000);
   const host = env.HOST || "0.0.0.0";
   
-  // Base path prefix for GitHub Pages production
-  const base = mode === 'production' ? '/Redeemers-Forge/' : (env.BASE_PATH || env.BASE_URL || "/");
+  const base = mode === "production" ? "/Redeemers-Forge/" : (env.BASE_PATH || env.BASE_URL || "/");
 
   return {
     base,
-   plugins: [
+    plugins: [
       {
-        name: 'force-nested-node-modules',
-        async resolveId(source, importer) {
-          if (source === 'react' || source.startsWith('react/')) {
-            // Try resolving it relative to this package.json first
-            const resolved = await this.resolve(source, path.resolve(__dirname, 'package.json'), { skipSelf: true });
-            // If it succeeds, use it; otherwise, let Vite use standard node module fallback resolution
+        name: "force-nested-node-modules",
+        async resolveId(source) {
+          if (source === "react" || source.startsWith("react/")) {
+            const resolved = await this.resolve(source, path.resolve(__dirname, "package.json"), { skipSelf: true });
             if (resolved) return resolved;
           }
           return null;
@@ -36,19 +33,12 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "src"),
         "@assets": path.resolve(__dirname, "..", "..", "attached_assets"),
-        "@tanstack/react-query": path.resolve(
-          __dirname,
-          "node_modules",
-          "@tanstack",
-          "react-query",
-        ),
+        "@tanstack/react-query": path.resolve(__dirname, "node_modules", "@tanstack", "react-query"),
       },
       dedupe: ["react", "react-dom"],
     },
-    // Set the root to the workspace top-level where index.html lives
     root: path.resolve(__dirname, "../../"), 
     build: {
-      // Force the outDir to drop into this sub-folder's dist directory
       outDir: path.resolve(__dirname, "dist"),
       emptyOutDir: true,
       assetsDir: "assets",
@@ -58,19 +48,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    server: {
-      port,
-      strictPort: false,
-      host,
-      allowedHosts: true,
-      fs: {
-        strict: false, 
-      },
-    },
-    preview: {
-      port,
-      host,
-      allowedHosts: true,
-    },
+    server: { port, strictPort: false, host, allowedHosts: true, fs: { strict: false } },
+    preview: { port, host, allowedHosts: true },
   };
 });
