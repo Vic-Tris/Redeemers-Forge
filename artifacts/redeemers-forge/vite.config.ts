@@ -11,26 +11,41 @@ export default defineConfig(({ mode }) => {
   const port = Number(env.PORT || 3000);
   const host = env.HOST || "0.0.0.0";
   
-  const base = mode === "production" ? "/Redeemers-Forge/" : (env.BASE_PATH || env.BASE_URL || "/");
-
-  // Detect if we are running inside Vercel's build container
-  const isVercel = process.env.VERCEL === "1";
+  const base =
+    mode === "production"
+      ? process.env.VERCEL === "1"
+        ? "/"
+        : env.BASE_PATH || env.BASE_URL || "/Redeemers-Forge/"
+      : env.BASE_PATH || env.BASE_URL || "/";
 
   return {
     base,
     plugins: [
-      // Only include the custom path interceptor if NOT building on Vercel
-      ...(!isVercel ? [{
+      {
         name: "force-nested-node-modules",
-        resolveId(source) {
+        async resolveId(source) {
           if (source === "react" || source.startsWith("react/")) {
-            return this.resolve(source, path.resolve(__dirname, "package.json"), { skipSelf: true });
+            try {
+              const packageJsonPaths = [
+                path.resolve(__dirname, "package.json"),
+                path.resolve(__dirname, "..", "..", "package.json"),
+              ];
+
+              for (const packageJsonPath of packageJsonPaths) {
+                const resolved = await this.resolve(source, packageJsonPath, { skipSelf: true });
+                if (resolved) {
+                  return resolved;
+                }
+              }
+            } catch {
+              return null;
+            }
           }
           return null;
-        }
-      }] : []),
-      react(), 
-      tailwindcss({ optimize: false })
+        },
+      },
+      react(),
+      tailwindcss({ optimize: false }),
     ],
     resolve: {
       alias: {
