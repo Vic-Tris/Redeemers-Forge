@@ -16,12 +16,15 @@ export default defineConfig(({ mode }) => {
 
   return {
     base,
-    plugins: [
+   plugins: [
       {
         name: 'force-nested-node-modules',
-        resolveId(source) {
+        async resolveId(source, importer) {
           if (source === 'react' || source.startsWith('react/')) {
-            return this.resolve(source, path.resolve(__dirname, 'package.json'), { skipSelf: true });
+            // Try resolving it relative to this package.json first
+            const resolved = await this.resolve(source, path.resolve(__dirname, 'package.json'), { skipSelf: true });
+            // If it succeeds, use it; otherwise, let Vite use standard node module fallback resolution
+            if (resolved) return resolved;
           }
           return null;
         }
