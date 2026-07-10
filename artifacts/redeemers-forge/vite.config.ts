@@ -11,12 +11,12 @@ export default defineConfig(({ mode }) => {
   const port = Number(env.PORT || 3000);
   const host = env.HOST || "0.0.0.0";
   
+  // Base path prefix for GitHub Pages production
   const base = mode === 'production' ? '/Redeemers-Forge/' : (env.BASE_PATH || env.BASE_URL || "/");
 
   return {
     base,
     plugins: [
-      // 👇 Custom Resolution Interceptor Plugin
       {
         name: 'force-nested-node-modules',
         resolveId(source) {
@@ -42,10 +42,18 @@ export default defineConfig(({ mode }) => {
       },
       dedupe: ["react", "react-dom"],
     },
-    root: path.resolve(__dirname, "../../"),
+    // Set the root to the workspace top-level where index.html lives
+    root: path.resolve(__dirname, "../../"), 
     build: {
+      // Force the outDir to drop into this sub-folder's dist directory
       outDir: path.resolve(__dirname, "dist"),
       emptyOutDir: true,
+      assetsDir: "assets",
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, "../../index.html"),
+        },
+      },
     },
     server: {
       port,
