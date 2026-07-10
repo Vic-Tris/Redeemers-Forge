@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "installCommand": "npm install --prefix artifacts/redeemers-forge",
   "builds": [
     {
       "src": "artifacts/redeemers-forge/package.json",
