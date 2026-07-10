@@ -13,23 +13,22 @@ export default defineConfig(({ mode }) => {
   
   const base = mode === "production" ? "/Redeemers-Forge/" : (env.BASE_PATH || env.BASE_URL || "/");
 
+  // Detect if we are running inside Vercel's build container
+  const isVercel = process.env.VERCEL === "1";
+
   return {
     base,
     plugins: [
-      {
+      // Only include the custom path interceptor if NOT building on Vercel
+      ...(!isVercel ? [{
         name: "force-nested-node-modules",
-        async resolveId(source) {
+        resolveId(source) {
           if (source === "react" || source.startsWith("react/")) {
-            try {
-              const resolved = await this.resolve(source, path.resolve(__dirname, "package.json"), { skipSelf: true });
-              return resolved ?? null;
-            } catch {
-              return null;
-            }
+            return this.resolve(source, path.resolve(__dirname, "package.json"), { skipSelf: true });
           }
           return null;
         }
-      },
+      }] : []),
       react(), 
       tailwindcss({ optimize: false })
     ],
@@ -37,7 +36,12 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "src"),
         "@assets": path.resolve(__dirname, "..", "..", "attached_assets"),
-        "@tanstack/react-query": path.resolve(__dirname, "node_modules", "@tanstack", "react-query"),
+        "@tanstack/react-query": path.resolve(
+          __dirname,
+          "node_modules",
+          "@tanstack",
+          "react-query",
+        ),
       },
       dedupe: ["react", "react-dom"],
     },
@@ -52,7 +56,19 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    server: { port, strictPort: false, host, allowedHosts: true, fs: { strict: false } },
-    preview: { port, host, allowedHosts: true },
+    server: {
+      port,
+      strictPort: false,
+      host,
+      allowedHosts: true,
+      fs: {
+        strict: false, 
+      },
+    },
+    preview: {
+      port,
+      host,
+      allowedHosts: true,
+    },
   };
 });
