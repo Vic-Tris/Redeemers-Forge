@@ -10,6 +10,11 @@ export default function Home() {
   const { data: trendingPosts, isLoading: isLoadingTrending } = useGetTrendingPosts();
 
   const heroPost = featuredPosts?.[0];
+  const heroPost = featuredPosts?.[0];
+
+console.log("Featured Posts:", featuredPosts);
+console.log("Hero Post:", heroPost);
+console.log("Loading:", isLoadingFeatured);
 
   return (
     <div className="space-y-16">
